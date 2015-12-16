@@ -13,20 +13,22 @@ import org.jdom2.input.SAXBuilder;
 import org.xml.sax.InputSource;
 
 import model.Values.Privilege;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Car {
-	private String uri;
+	private long id;
 	private String number;
 	private Date registerTime;
 	private Date expireTime;
 	private Privilege privilege;
 	private int size;
 	
-	public String getUri() {
-		return uri;
+	public long getId() {
+		return id;
 	}
-	public void setUri(String uri) {
-		this.uri = uri;
+	public void setId(long id) {
+		this.id = id;
 	}
 	public String getNumber() {
 		return number;
@@ -38,7 +40,7 @@ public class Car {
 		return registerTime;
 	}
 	public void setRegisterTime(String timeStirng) {
-		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.nnnnnn");
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
 		try {
 			registerTime = fmt.parse(timeStirng);
 		} catch (ParseException e) {
@@ -49,7 +51,7 @@ public class Car {
 		return expireTime;
 	}
 	public void setExpireTime(String timeStirng) {
-		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.nnnnnn");
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
 		try {
 			expireTime = fmt.parse(timeStirng);
 		} catch (ParseException e) {
@@ -68,40 +70,24 @@ public class Car {
 	public void setSize(int size) {
 		this.size = size;
 	}
-	static public List<Car> parseXML(String xml)
+	static public List<Car> parseJSON(String jstr)
 	{
 		List<Car> ret = new  ArrayList<Car>();
-		try {
-			StringReader read = new StringReader(xml);
-			InputSource inputSource = new InputSource(read);
-			SAXBuilder builder = new SAXBuilder();
-	        Document doc = builder.build(inputSource);
-	        Element collection = doc.getRootElement();
-	        List<Element> carList = collection.getChildren("U8129336708a3d_ipls_Car");
-	        if (null != carList){
-	        	for(int i = 0, j = carList.size();i < j; i++)  
-		        {
-		        	Element cE = carList.get(i);
-		        	Element cUri = cE.getChild("uri");
-		        	Element cNumber = cE.getChild("number");
-		        	Element cRegisterTime = cE.getChild("registerTime");
-		        	Element cExpireTime = cE.getChild("expireTime");
-		        	Element cPrivilege = cE.getChild("privilege");
-		        	Element cSize = cE.getChild("size");
-		        	Car cM = new Car();
-		        	cM.setUri(cUri.getText());
-		        	cM.setNumber(cNumber.getText());
-		        	cM.setRegisterTime(cRegisterTime.getText());
-		        	cM.setExpireTime(cExpireTime.getText());
-		        	cM.setPrivilege(Integer.getInteger(cPrivilege.getText()));
-		        	cM.setSize(Integer.getInteger(cSize.getText()));
-		        	ret.add(cM);
-		        }
-	        }
-	        
-		} catch (Exception e) {
-			// do nothing
+		if (jstr.equals("{}") || jstr.isEmpty()) return ret;
+		jstr = jstr.substring(jstr.indexOf(':') + 1, jstr.length() - 1);
+		JSONArray array = JSONArray.fromObject(jstr);
+		for(int i = 0; i < array.size(); i++)  {
+	        JSONObject jCar = JSONObject.fromObject(array.get(i));
+		    Car cM = new Car();
+		    cM.setId(jCar.getLong("id"));
+		    cM.setNumber(jCar.getString("number"));
+		    cM.setRegisterTime(jCar.getString("registertime"));
+		    cM.setExpireTime(jCar.getString("expiretime"));
+		    cM.setPrivilege(jCar.getInt("privilege"));
+		    cM.setSize(jCar.getInt("size"));
+		    ret.add(cM);
 		}
+	        
         return ret;
 	}
 }

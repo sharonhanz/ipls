@@ -1,25 +1,22 @@
 package model;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.xml.sax.InputSource;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Exit {
-	private String uri;
+	private long id;
 	private String number;
 	private String position;
 	private boolean status;
 	
-	public String getUri() {
-		return uri;
+	public long getId() {
+		return id;
 	}
-	public void setUri(String uri) {
-		this.uri = uri;
+	public void setId(long id) {
+		this.id = id;
 	}
 	public String getNumber() {
 		return number;
@@ -40,36 +37,22 @@ public class Exit {
 		this.position = position;
 	}
 	
-	static public List<Exit> parseXML(String xml)
+	static public List<Exit> parseJSON(String jstr)
 	{
 		List<Exit> ret = new  ArrayList<Exit>();
-		try {
-			StringReader read = new StringReader(xml);
-			InputSource inputSource = new InputSource(read);
-			SAXBuilder builder = new SAXBuilder();
-	        Document doc = builder.build(inputSource);
-	        Element collection = doc.getRootElement();
-	        List<Element> exitList = collection.getChildren("U8129336708a3d_ipls_Exit");
-	        if (null != exitList){
-	        	for(int i = 0, j = exitList.size();i < j; i++)  
-		        {
-		        	Element cE = exitList.get(i);
-		        	Element cUri = cE.getChild("uri");
-		        	Element cNumber = cE.getChild("number");
-		        	Element cPosition = cE.getChild("position");
-		        	Element cStatus = cE.getChild("status");
-		        	Exit cM = new Exit();
-		        	cM.setUri(cUri.getText());
-		        	cM.setNumber(cNumber.getText());
-		        	cM.setStatus(cStatus.getText().equals("1"));
-		        	cM.setPosition(cPosition.getText());
-		        	ret.add(cM);
-		        }
-	        }
-	        
-		} catch (Exception e) {
-			// do nothing
+		if (jstr.equals("{}") || jstr.isEmpty()) return ret;
+		jstr = jstr.substring(jstr.indexOf(':') + 1, jstr.length() - 1);
+		JSONArray array = JSONArray.fromObject(jstr);
+		for(int i = 0; i < array.size(); i++)  {
+	        JSONObject jo = JSONObject.fromObject(array.get(i));
+	        Exit cM = new Exit();
+		    cM.setId(jo.getLong("id"));
+		    cM.setNumber(jo.getString("number"));
+        	cM.setStatus(jo.getInt("status") == 1);
+        	cM.setPosition(jo.getString("position"));
+		    ret.add(cM);
 		}
+	        
         return ret;
 	}
 }

@@ -1,11 +1,13 @@
 package control;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import model.Entry;
 import model.Values;
+import net.sf.json.JSONObject;
 import util.HttpHelper;
-import util.XMLParser;
 
 public class EntryBean {
 	public boolean isExist(String entryNumber)
@@ -13,7 +15,7 @@ public class EntryBean {
 		boolean ret = false;
 		String url = Values.DOMAIN + "Entry/?Entry.number=" + entryNumber;
 		String resultXML = HttpHelper.SendHttpRequest("get", url, null);
-		List<Entry> us = Entry.parseXML(resultXML);
+		List<Entry> us = Entry.parseJSON(resultXML);
 		if (us.size() > 0)
 			ret = true;
 		return ret;
@@ -22,7 +24,7 @@ public class EntryBean {
 	public Entry get(String number) {
 		String url = Values.DOMAIN + "Entry/?Entry.number=" + number;
 		String resultXML = HttpHelper.SendHttpRequest("get", url, null);
-		List<Entry> us = Entry.parseXML(resultXML);
+		List<Entry> us = Entry.parseJSON(resultXML);
 		if (us.size() == 0) return null;
 		return us.get(0);
 	}
@@ -31,49 +33,53 @@ public class EntryBean {
 	{
 		String url = Values.DOMAIN + "Entry/";
 		String resultXML = HttpHelper.SendHttpRequest("get", url, null);
-		List<Entry> ret = Entry.parseXML(resultXML);
+		List<Entry> ret = Entry.parseJSON(resultXML);
 		return ret;
 	}
 	
 	public int add(String number, String position, boolean status)
 	{
 		if (isExist(number))
-			return 1;
-		XMLParser xp = new XMLParser("post");
-		xp.add("set", "this.number", number);
+			return -1;
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("number", number);
 		if (status) {
-			xp.add("set", "this.status", "1");
+			map.put("status", 1);
 		} else {
-			xp.add("set", "this.status", "0");
+			map.put("status", 0);
 		}
-		xp.add("set", "this.position", position);
-		String xmlBody = xp.getXML();
+		map.put("position", position);
+		JSONObject jo = JSONObject.fromObject(map);
 		String url = Values.DOMAIN + "Entry/";
-		String resultXML = HttpHelper.SendHttpRequest("post", url, xmlBody);
+		String resultXML = HttpHelper.SendHttpRequest("post", url, jo.toString());
 		System.out.println(resultXML);
 		return 0;
 	}
 	
 	public int open(String number) {
 		Entry p = get(number);
-		if (p == null) return 1;
-		XMLParser xp = new XMLParser("put");
-		xp.add("set", "this.status", "1");
-		String xmlBody = xp.getXML();
-		String url = Values.DOMAIN + p.getUri();
-		String resultXML = HttpHelper.SendHttpRequest("put", url, xmlBody);
+		if (p == null) return -1;
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("number", number);
+		map.put("position", p.getPosition());
+		map.put("status", 1);
+		JSONObject jo = JSONObject.fromObject(map);
+		String url = Values.DOMAIN + "Entry/" + p.getId();
+		String resultXML = HttpHelper.SendHttpRequest("put", url, jo.toString());
 		System.out.println(resultXML);
 		return 0;
 	}
 	
 	public int close(String number) {
 		Entry p = get(number);
-		if (p == null) return 1;
-		XMLParser xp = new XMLParser("put");
-		xp.add("set", "this.status", "0");
-		String xmlBody = xp.getXML();
-		String url = Values.DOMAIN + p.getUri();
-		String resultXML = HttpHelper.SendHttpRequest("put", url, xmlBody);
+		if (p == null) return -1;
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("number", number);
+		map.put("position", p.getPosition());
+		map.put("status", 0);
+		JSONObject jo = JSONObject.fromObject(map);
+		String url = Values.DOMAIN + "Entry/" + p.getId();
+		String resultXML = HttpHelper.SendHttpRequest("put", url, jo.toString());
 		System.out.println(resultXML);
 		return 0;
 	}

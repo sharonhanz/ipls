@@ -1,19 +1,16 @@
 package model;
 
-import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.xml.sax.InputSource;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Park {
-	private String uri;
+	private long id;
 	private String carNumber;
 	private String placeNumber;
 	private Date startTime;
@@ -23,11 +20,11 @@ public class Park {
 	private Double fee;
 	private boolean left;
 	
-	public String getUri() {
-		return uri;
+	public long getId() {
+		return id;
 	}
-	public void setUri(String uri) {
-		this.uri = uri;
+	public void setId(long id) {
+		this.id = id;
 	}
 	public String getCarNumber() {
 		return carNumber;
@@ -57,7 +54,7 @@ public class Park {
 		return startTime;
 	}
 	public void setStartTime(String timeStirng) {
-		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.nnnnnn");
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
 		try {
 			startTime = fmt.parse(timeStirng);
 		} catch (ParseException e) {
@@ -68,7 +65,7 @@ public class Park {
 		return endTime;
 	}
 	public void setEndTime(String timeStirng) {
-		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.nnnnnn");
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
 		try {
 			endTime = fmt.parse(timeStirng);
 		} catch (ParseException e) {
@@ -88,48 +85,30 @@ public class Park {
 		this.fee = fee;
 	}
 	
-	static public List<Park> parseXML(String xml)
+	static public List<Park> parseJSON(String jstr)
 	{
 		List<Park> ret = new  ArrayList<Park>();
-		try {
-			StringReader read = new StringReader(xml);
-			InputSource inputSource = new InputSource(read);
-			SAXBuilder builder = new SAXBuilder();
-	        Document doc = builder.build(inputSource);
-	        Element collection = doc.getRootElement();
-	        List<Element> parkList = collection.getChildren("U8129336708a3d_ipls_Park");
-	        if (null != parkList){
-	        	for(int i = 0, j = parkList.size();i < j; i++)  
-		        {
-		        	Element cE = parkList.get(i);
-		        	Element cUri = cE.getChild("uri");
-		        	Element cCarNumber = cE.getChild("carNumber");
-		        	Element cPlaceNumber = cE.getChild("placeNumber");
-		        	Element cEntryNumber = cE.getChild("entryNumber");
-		        	Element cStartTime = cE.getChild("startTime");
-		        	Element cLeft = cE.getChild("left");
-		        	Park cM = new Park();
-		        	cM.setUri(cUri.getText());
-		        	cM.setCarNumber(cCarNumber.getText());
-		        	cM.setPlaceNumber(cPlaceNumber.getText());
-		        	cM.setEntryNumber(cEntryNumber.getText());
-		        	cM.setStartTime(cStartTime.getText());
-		        	cM.setLeft(cLeft.getText().equals("1"));
-		        	if (cM.getLeft()) {
-			        	Element cExitNumber = cE.getChild("exitNumber");
-			        	Element cEndTime = cE.getChild("endTime");
-			        	Element cFee = cE.getChild("fee");
-			        	cM.setExitNumber(cExitNumber.getText());
-			        	cM.setFee(Double.valueOf(cFee.getText()));
-			        	cM.setEndTime(cEndTime.getText());
-		        	}
-		        	ret.add(cM);
-		        }
-	        }
-	        
-		} catch (Exception e) {
-			// do nothing
+		if (jstr.equals("{}") || jstr.isEmpty()) return ret;
+		//System.out.println(jstr);
+		jstr = jstr.substring(jstr.indexOf(':') + 1, jstr.length() - 1);
+		JSONArray array = JSONArray.fromObject(jstr);
+		for(int i = 0; i < array.size(); i++)  {
+	        JSONObject jo = JSONObject.fromObject(array.get(i));
+	        Park cM = new Park();
+	        cM.setId(jo.getLong("id"));
+        	cM.setCarNumber(jo.getString("carnumber"));
+        	cM.setPlaceNumber(jo.getString("placenumber"));
+        	cM.setEntryNumber(jo.getString("entrynumber"));
+        	cM.setStartTime(jo.getString("starttime"));
+        	cM.setLeft(jo.getInt("left") == 1);
+        	if (cM.getLeft()) {
+	        	cM.setExitNumber(jo.getString("exitnumber"));
+	        	cM.setFee(jo.getDouble("fee"));
+	        	cM.setEndTime(jo.getString("endtime"));
+        	}
+		    ret.add(cM);
 		}
+	        
         return ret;
 	}
 }

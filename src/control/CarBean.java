@@ -2,13 +2,15 @@ package control;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import model.Car;
 import model.Values;
 import model.Values.Privilege;
+import net.sf.json.JSONArray;
 import util.HttpHelper;
-import util.XMLParser;
 
 public class CarBean {
 	
@@ -17,7 +19,7 @@ public class CarBean {
 		boolean ret = false;
 		String url = Values.DOMAIN + "Car/?Car.number=" + carNumber;
 		String resultXML = HttpHelper.SendHttpRequest("get", url, null);
-		List<Car> us = Car.parseXML(resultXML);
+		List<Car> us = Car.parseJSON(resultXML);
 		if (us.size() > 0)
 			ret = true;
 		return ret;
@@ -26,7 +28,7 @@ public class CarBean {
 	public Car get(String number) {
 		String url = Values.DOMAIN + "Car/?Car.number=" + number;
 		String resultXML = HttpHelper.SendHttpRequest("get", url, null);
-		List<Car> us = Car.parseXML(resultXML);
+		List<Car> us = Car.parseJSON(resultXML);
 		if (us.size() == 0) return null;
 		return us.get(0);
 	}
@@ -35,37 +37,38 @@ public class CarBean {
 	{
 		String url = Values.DOMAIN + "Car/";
 		String resultXML = HttpHelper.SendHttpRequest("get", url, null);
-		List<Car> ret = Car.parseXML(resultXML);
+		List<Car> ret = Car.parseJSON(resultXML);
 		return ret;
 	}
 	
 	public int add(String number, Privilege privilege, Integer size)
 	{
 		if (isExist(number))
-			return 1;
-		XMLParser xp = new XMLParser("post");
-		xp.add("set", "this.number", number);
-		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.nnnnnn");
+			return -1;
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("number", number);
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
 		Date registerTime = new Date();
-		xp.add("set", "this.registerTime", fmt.format(registerTime));
-		xp.add("set", "this.size", size.toString());
-		xp.add("set", "this.privilege", String.valueOf(privilege.ordinal()));
+		map.put("registertime", fmt.format(registerTime));
 		if (privilege == Privilege.Commen) {
 			registerTime.setYear(registerTime.getYear() + 2);
-			xp.add("set", "this.expireTime", fmt.format(registerTime));
+			map.put("expiretime", fmt.format(registerTime));
 		} else if (privilege == Privilege.Internal) {
 			registerTime.setYear(registerTime.getYear() + 3);
-			xp.add("set", "this.expireTime", fmt.format(registerTime));
+			map.put("expiretime", fmt.format(registerTime));
 		} else {
 			registerTime.setYear(9999);
-			xp.add("set", "this.expireTime", fmt.format(registerTime));
+			map.put("expiretime", fmt.format(registerTime));
 		}
-		BalanceBean bBean = new BalanceBean();
-		bBean.add(number, 100.00);
-		String xmlBody = xp.getXML();
+		map.put("privilege", privilege.ordinal());
+		map.put("size", size);
+		JSONArray json = JSONArray.fromObject(map);
+		String jstr = json.get(0).toString();
 		String url = Values.DOMAIN + "Car/";
-		String resultXML = HttpHelper.SendHttpRequest("post", url, xmlBody);
+		String resultXML = HttpHelper.SendHttpRequest("post", url, jstr);
 		System.out.println(resultXML);
+		BalanceBean bb = new BalanceBean();
+		bb.add(number, 00.00);
 		return 0;
 	}
 }
