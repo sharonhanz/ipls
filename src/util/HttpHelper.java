@@ -48,6 +48,19 @@ public class HttpHelper {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		} else if ("DELETE".equalsIgnoreCase(type)) {
+			DeleteMethod delete = new DeleteMethod(url);
+			delete.setRequestHeader("Content-type", "application/json");
+			HttpClient httpclient = new HttpClient();
+			try {
+				httpclient.executeMethod(delete);
+				ResponseBody = delete.getResponseBodyAsString();
+				delete.releaseConnection();
+			} catch (HttpException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		} else {
 		}
 		return ResponseBody;

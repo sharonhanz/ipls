@@ -96,4 +96,12 @@ public class ParkBean {
 		System.out.println(resultXML);
 		return 0;
 	}
+	
+	public int delete(String id) {
+		
+		String url = Values.DOMAIN + "Park/" + id;
+		String resultXML = HttpHelper.SendHttpRequest("delete", url, "");
+		System.out.println(resultXML);
+		return 0;
+	}
 }

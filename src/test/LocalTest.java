@@ -47,5 +47,7 @@ public class LocalTest  {
 			//Time.sleep(1000);
 			pkb.leave("CA123", "B1");*/
 			//cb.addName();
+			ParkBean pkb = new ParkBean();
+			pkb.delete("1450286415110");
 		}
 }
