@@ -23,6 +23,8 @@ public class Car {
 	private Date expireTime;
 	private Privilege privilege;
 	private int size;
+	private String name;
+	private String phone;
 	
 	public long getId() {
 		return id;
@@ -70,6 +72,18 @@ public class Car {
 	public void setSize(int size) {
 		this.size = size;
 	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
 	static public List<Car> parseJSON(String jstr)
 	{
 		List<Car> ret = new  ArrayList<Car>();
@@ -85,6 +99,10 @@ public class Car {
 		    cM.setExpireTime(jCar.getString("expiretime"));
 		    cM.setPrivilege(jCar.getInt("privilege"));
 		    cM.setSize(jCar.getInt("size"));
+		    if (jCar.has("name")) {
+		    cM.setName(jCar.getString("name"));
+		    cM.setPhone(jCar.getString("phone"));
+		    }
 		    ret.add(cM);
 		}
 	        
