@@ -99,10 +99,8 @@ public class Car {
 		    cM.setExpireTime(jCar.getString("expiretime"));
 		    cM.setPrivilege(jCar.getInt("privilege"));
 		    cM.setSize(jCar.getInt("size"));
-		    if (jCar.has("name")) {
 		    cM.setName(jCar.getString("name"));
 		    cM.setPhone(jCar.getString("phone"));
-		    }
 		    ret.add(cM);
 		}
 	        

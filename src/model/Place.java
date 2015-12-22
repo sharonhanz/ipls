@@ -10,7 +10,7 @@ import net.sf.json.JSONObject;
 public class Place {
 	private long id;
 	private String number;
-	private boolean occupied;
+	private int occupied;
 	private String position;
 	private Privilege privilege;
 	private int size;
@@ -27,10 +27,10 @@ public class Place {
 	public void setNumber(String number) {
 		this.number = number;
 	}
-	public boolean getOccupied() {
+	public int getOccupied() {
 		return occupied;
 	}
-	public void setOccupied(boolean occupied) {
+	public void setOccupied(int occupied) {
 		this.occupied = occupied;
 	}
 	public String getPosition() {
@@ -62,7 +62,7 @@ public class Place {
 	        Place cM = new Place();
 		    cM.setId(jo.getLong("id"));
 		    cM.setNumber(jo.getString("number"));
-		    cM.setOccupied(jo.getInt("occupied") == 1);
+		    cM.setOccupied(jo.getInt("occupied"));
         	cM.setPosition(jo.getString("position"));
         	cM.setPrivilege(jo.getInt("privilege"));
         	cM.setSize(jo.getInt("size"));

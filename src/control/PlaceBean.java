@@ -67,17 +67,22 @@ public class PlaceBean {
 	
 	public int add(String number,Integer size, Privilege privilege, boolean occupied, String position)
 	{
+		if (occupied) {
+			return add(number, size, privilege, 1, position);
+		} else {
+			return add(number, size, privilege, 0, position);
+		}
+	}
+	
+	public int add(String number,Integer size, Privilege privilege, int occupied, String position)
+	{
 		if (isExist(number))
 			return -1;
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("number", number);
 		map.put("size", size);
 		map.put("privilege", privilege.ordinal());
-		if (occupied) {
-			map.put("occupied", 1);
-		} else {
-			map.put("occupied", 0);
-		}
+		map.put("occupied", occupied);
 		map.put("position", position);
 		JSONObject jo = JSONObject.fromObject(map);
 		String url = Values.DOMAIN + "Place/";
@@ -110,6 +115,22 @@ public class PlaceBean {
 		map.put("size", p.getSize());
 		map.put("privilege", p.getPrivilege().ordinal());
 	    map.put("occupied", 0);
+		map.put("position", p.getPosition());
+		JSONObject jo = JSONObject.fromObject(map);
+		String url = Values.DOMAIN + "Place/" + p.getId();
+		String resultXML = HttpHelper.SendHttpRequest("put", url, jo.toString());
+		System.out.println(resultXML);
+		return 0;
+	}
+	
+	public int forbid(String number) {
+		Place p = get(number);
+		if (p == null) return -1;
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("number", number);
+		map.put("size", p.getSize());
+		map.put("privilege", p.getPrivilege().ordinal());
+	    map.put("occupied", 2);
 		map.put("position", p.getPosition());
 		JSONObject jo = JSONObject.fromObject(map);
 		String url = Values.DOMAIN + "Place/" + p.getId();
